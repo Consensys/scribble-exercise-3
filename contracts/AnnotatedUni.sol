@@ -287,8 +287,8 @@ contract Uni {
      * @notice Change the minter address
      * @param minter_ The address of the new minter
      */
-    /// if_succeeds {:msg "Makes minter_ the minter for this contract"} minter_ == minter;
-    /// if_succeeds {:msg "Can only be called by the original minter"} msg.sender == old(minter);
+    /// #if_succeeds {:msg "Makes minter_ the minter for this contract"} minter_ == minter;
+    /// #if_succeeds {:msg "Can only be called by the original minter"} msg.sender == old(minter);
     function setMinter(address minter_) external {
         require(msg.sender == minter, "Uni::setMinter: only the minter can change the minter address");
         emit MinterChanged(minter, minter_);
@@ -300,10 +300,10 @@ contract Uni {
      * @param dst The address of the destination account
      * @param rawAmount The number of tokens to be minted
      */
-    /// if_succeeds {:msg "Only a minter can mint tokens"}  msg.sender == minter;
-    /// if_succeeds {:msg "The dst balance increases with rawAmount"} uint(balances[dst]) == uint(old(balances[dst])) + rawAmount;
-    /// if_succeeds {:msg "The totalSupply increases with rawAmount"} uint(totalSupply) == uint(old(totalSupply)) + rawAmount;
-    /// if_succeeds {:msg "we don't mint for the zero address" } dst != address(0);
+    /// #if_succeeds {:msg "Only a minter can mint tokens"}  msg.sender == minter;
+    /// #if_succeeds {:msg "The dst balance increases with rawAmount"} uint(balances[dst]) == uint(old(balances[dst])) + rawAmount;
+    /// #if_succeeds {:msg "The totalSupply increases with rawAmount"} uint(totalSupply) == uint(old(totalSupply)) + rawAmount;
+    /// #if_succeeds {:msg "we don't mint for the zero address" } dst != address(0);
     function mint(address dst, uint rawAmount) external {
         require(msg.sender == minter, "Uni::mint: only the minter can mint");
         require(block.timestamp >= mintingAllowedAfter, "Uni::mint: minting not allowed yet");
@@ -331,7 +331,7 @@ contract Uni {
      * @param spender The address of the account spending the funds
      * @return The number of tokens approved
      */
-    /// if_succeeds {:msg "returns allowance" } $result == allowances[account][spender];
+    /// #if_succeeds {:msg "returns allowance" } $result == allowances[account][spender];
     function allowance(address account, address spender) external view returns (uint) {
         return allowances[account][spender];
     }
@@ -344,7 +344,7 @@ contract Uni {
      * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
      * @return Whether or not the approval succeeded
      */
-    /// if_succeeds {:msg "permits spender to spend amount for msg.sender"} uint(allowances[msg.sender][spender]) == amount;
+    /// #if_succeeds {:msg "permits spender to spend amount for msg.sender"} uint(allowances[msg.sender][spender]) == amount;
     function approve(address spender, uint rawAmount) external returns (bool) {
         uint96 amount;
         if (rawAmount == uint(-1)) {
@@ -369,7 +369,7 @@ contract Uni {
      * @param r Half of the ECDSA signature pair
      * @param s Half of the ECDSA signature pair
      */
-    /// if_succeeds {:msg "permits spender to spend amount for owner"} uint(allowances[owner][spender]) == amount;
+    /// #if_succeeds {:msg "permits spender to spend amount for owner"} uint(allowances[owner][spender]) == amount;
     function permit(address owner, address spender, uint rawAmount, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
         uint96 amount;
         if (rawAmount == uint(-1)) {
@@ -396,7 +396,7 @@ contract Uni {
      * @param account The address of the account to get the balance of
      * @return The number of tokens held
      */
-    /// if_succeeds {:msg "Returns balance of account"} $result == balances[account];
+    /// #if_succeeds {:msg "Returns balance of account"} $result == balances[account];
     function balanceOf(address account) external view returns (uint) {
         return balances[account];
     }
@@ -407,8 +407,8 @@ contract Uni {
      * @param rawAmount The number of tokens to transfer
      * @return Whether or not the transfer succeeded
      */
-    /// if_succeeds {:msg "sum of balances doesn't change"} balances[msg.sender] + balances[dst] == old(balances[msg.sender] + balances[dst]);
-    /// if_succeeds {:msg "The recipient receives rawamount"} balances[dst] = old(balances[dst]) + old(rawAmount);
+    /// #if_succeeds {:msg "sum of balances doesn't change"} balances[msg.sender] + balances[dst] == old(balances[msg.sender] + balances[dst]);
+    /// #if_succeeds {:msg "The recipient receives rawamount"} balances[dst] = old(balances[dst]) + old(rawAmount);
     function transfer(address dst, uint rawAmount) external returns (bool) {
         uint96 amount = safe96(rawAmount, "Uni::transfer: amount exceeds 96 bits");
         _transferTokens(msg.sender, dst, amount);
@@ -422,9 +422,9 @@ contract Uni {
      * @param rawAmount The number of tokens to transfer
      * @return Whether or not the transfer succeeded
      */
-    /// if_succeeds {:msg "sum of balances doesn't change"} balances[src] + balances[dst] == old(balances[src] + balances[dst]);
-    /// if_succeeds {:msg "The recipient receives rawamount"} balances[dst] = old(balances[dst]) + old(rawAmount);
-    /// if_succeeds {:msg "Sender has sufficient allowance"} msg.sender != src ==> allowances[src][msg.sender] > rawAmount;
+    /// #if_succeeds {:msg "sum of balances doesn't change"} balances[src] + balances[dst] == old(balances[src] + balances[dst]);
+    /// #if_succeeds {:msg "The recipient receives rawamount"} balances[dst] = old(balances[dst]) + old(rawAmount);
+    /// #if_succeeds {:msg "Sender has sufficient allowance"} msg.sender != src ==> allowances[src][msg.sender] > rawAmount;
     function transferFrom(address src, address dst, uint rawAmount) external returns (bool) {
         address spender = msg.sender;
         uint96 spenderAllowance = allowances[src][spender];
@@ -445,7 +445,7 @@ contract Uni {
      * @notice Delegate votes from `msg.sender` to `delegatee`
      * @param delegatee The address to delegate votes to
      */
-    /// if_succeeds {:msg "sets delegate for msg.sender to delegatee" } delegates[msg.sender] == delegatee;
+    /// #if_succeeds {:msg "sets delegate for msg.sender to delegatee" } delegates[msg.sender] == delegatee;
     function delegate(address delegatee) public {
         return _delegate(msg.sender, delegatee);
     }
@@ -475,8 +475,8 @@ contract Uni {
      * @param account The address to get votes balance
      * @return The number of current votes for `account`
      */
-    /// if_succeeds {:msg "If the account has no checkpoints return 0"} numCheckpoints[account] ==> $result == 0;
-    /// if_succeeds {:msg "If there are checkpoints then we return the amount of votes for the last one"}
+    /// #if_succeeds {:msg "If the account has no checkpoints return 0"} numCheckpoints[account] ==> $result == 0;
+    /// #if_succeeds {:msg "If there are checkpoints then we return the amount of votes for the last one"}
     /// let lastCheckpoint = numCheckpoints[account] - 1 in
     /// $result == checkpoints[account][lastCheckpoint].votes;
     function getCurrentVotes(address account) external view returns (uint96) {
@@ -491,12 +491,12 @@ contract Uni {
      * @param blockNumber The block number to get the vote balance at
      * @return The number of votes the account had as of the given block
      */
-    /// if_succeeds {:msg "no checkpoints"} numCheckpoints[account] == 0 ==> $result == 0;
-    /// if_succeeds {:msg "has no recent balance"}
+    /// #if_succeeds {:msg "no checkpoints"} numCheckpoints[account] == 0 ==> $result == 0;
+    /// #if_succeeds {:msg "has no recent balance"}
     ///     let nCheckpoints := numCheckpoints[account] in
     ///     checkpoints[account][nCheckpoints - 1].fromBlock <= blockNumber ==>
     ///     $result == checkpoints[account][nCheckpoints - 1].votes;
-    /// if_succeeds {:msg "has implicit zero balance"}
+    /// #if_succeeds {:msg "has implicit zero balance"}
     ///     (checkpoints[account][0].fromBlock > blockNumber) ==> $result == 0;
     function getPriorVotes(address account, uint blockNumber) public view returns (uint96) {
         require(blockNumber < block.number, "Uni::getPriorVotes: not yet determined");
@@ -553,11 +553,11 @@ contract Uni {
         _moveDelegates(delegates[src], delegates[dst], amount);
     }
 
-    /// if_succeeds {:msg "destRep gains amount if non 0"} 
+    /// #if_succeeds {:msg "destRep gains amount if non 0"} 
     /// destRep != address(0x0) ==> getCurrentVotes(dstRep) == old(getCurrentVotes(dstRep)) + amount;
-    /// if_succeeds {:msg "srcRep looses amount if non 0"} 
+    /// #if_succeeds {:msg "srcRep looses amount if non 0"} 
     /// srcRep != address(0x0) ==> getCurrentVotes(srcRep) == old(getCurrentVotes(srcRep)) - amount;
-    /// if_succeeds {:msg "if both accounts are non zero then no votes should be added"} 
+    /// #if_succeeds {:msg "if both accounts are non zero then no votes should be added"} 
     /// destRep != address(0x0) && srcRep != address(0x0)
     /// ==> getCurrentVotes(dstRep) + getCurrentVotes(srcRep) == old(getCurrentVotes(dstRep) + getCurrentVotes(srcRep));
     function _moveDelegates(address srcRep, address dstRep, uint96 amount) internal {
@@ -579,10 +579,10 @@ contract Uni {
     }
 
 
-    /// if_succeeds {:msg "nCheckpoints is the number of checkpoints for this delegatee"} nCheckpoints == numCheckpoints[delegatee];
-    /// if_succeeds {:msg "If there  was a previous checkpoint written in this block then update that checkpoint"} 
+    /// #if_succeeds {:msg "nCheckpoints is the number of checkpoints for this delegatee"} nCheckpoints == numCheckpoints[delegatee];
+    /// #if_succeeds {:msg "If there  was a previous checkpoint written in this block then update that checkpoint"} 
     /// nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber ==> checkpoints[delegatee][nCheckpoints - 1].votes = newVotes;
-    /// if_succeeds {:msg "Updates the numCheckpoints list when a checkpoint is added"}
+    /// #if_succeeds {:msg "Updates the numCheckpoints list when a checkpoint is added"}
     /// (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber ==> numCheckpoints[delegatee] == old(numCheckpoints[delegatee]))
     /// && 
     /// !(nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber ==> numCheckpoints[delegatee] == 1 + old(numCheckpoints[delegatee]));
@@ -599,26 +599,26 @@ contract Uni {
       emit DelegateVotesChanged(delegatee, oldVotes, newVotes);
     }
 
-    /// if_succeeds {:msg "Doesn't permit inputs that would change value due to casting"} uint($result) == n;
+    /// #if_succeeds {:msg "Doesn't permit inputs that would change value due to casting"} uint($result) == n;
     function safe32(uint n, string memory errorMessage) internal pure returns (uint32) {
         require(n < 2**32, errorMessage);
         return uint32(n);
     }
 
-    /// if_succeeds {:msg "Doesn't permit inputs that would change value due to casting"} uint($result) == n;
+    /// #if_succeeds {:msg "Doesn't permit inputs that would change value due to casting"} uint($result) == n;
     function safe96(uint n, string memory errorMessage) internal pure returns (uint96) {
         require(n < 2**96, errorMessage);
         return uint96(n);
     }
 
-    /// if_succeeds {:msg "Adds a to b"} $result == a + b;
+    /// #if_succeeds {:msg "Adds a to b"} $result == a + b;
     function add96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
         uint96 c = a + b;
         require(c >= a, errorMessage);
         return c;
     }
 
-    /// if_succeeds {:msg "subtracts a from b"} $result == a - b;
+    /// #if_succeeds {:msg "subtracts a from b"} $result == a - b;
     function sub96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
         require(b <= a, errorMessage);
         return a - b;
