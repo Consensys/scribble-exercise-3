@@ -2,11 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import "../utils/Context.sol";
 
 ///#define senderIsOwner() bool = _owner == msg.sender;
- contract Ownable is Context {
-    /// #if_updated {:msg "Only the owner can update this variable"} old(_owner == msg.sender) || _owner ==  0x0;
+ contract Ownable {
+    /// #if_updated {:msg "Only the owner can update this variable"} old(_owner == msg.sender) || _owner ==  address(0x0);
     address private _owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -14,9 +13,9 @@ import "../utils/Context.sol";
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
-    /// #if_succeeds {:msg "After construction the owner is not 0"} _owner != 0;
+    /// #if_succeeds {:msg "After construction the owner is not 0"} _owner != address(0);
     constructor () {
-        address msgSender = _msgSender();
+        address msgSender = msg.sender;
         _owner = msgSender;
         emit OwnershipTransferred(address(0), msgSender);
     }
@@ -33,7 +32,7 @@ import "../utils/Context.sol";
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(owner() == _msgSender(), "Ownable: caller is not the owner");
+        require(owner() == msg.sender, "Ownable: caller is not the owner");
         _;
     }
 
@@ -44,7 +43,7 @@ import "../utils/Context.sol";
      * NOTE: Renouncing ownership will leave the contract without an owner,
      * thereby removing any functionality that is only available to the owner.
      */
-    /// #if_succeeds {:msg "Set's the owner to 0"} _owner == adress(0);
+    /// #if_succeeds {:msg "Set's the owner to 0"} _owner == address(0);
     /// #if_succeeds {:msg "can only be called by the owner"} old(_owner) == msg.sender;
     function renounceOwnership() public virtual onlyOwner {
         emit OwnershipTransferred(_owner, address(0));
