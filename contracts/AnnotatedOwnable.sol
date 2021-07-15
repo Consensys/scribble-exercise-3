@@ -1,11 +1,9 @@
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 
 ///#define senderIsOwner() bool = _owner == msg.sender;
  contract Ownable {
-    /// #if_updated {:msg "Only the owner can update this variable"} old(_owner == msg.sender) || _owner ==  address(0x0);
+    /// #if_updated {:msg "Only the owner can update this variable"} old(_owner == msg.sender) || old(_owner ==  address(0x0));
     address private _owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -24,7 +22,7 @@ pragma solidity ^0.8.0;
      * @dev Returns the address of the current owner.
      */
     /// #if_succeeds {:msg "returns owner" } $result == _owner;
-    function owner() public view virtual returns (address) {
+    function owner() public view returns (address) {
         return _owner;
     }
 
@@ -45,7 +43,7 @@ pragma solidity ^0.8.0;
      */
     /// #if_succeeds {:msg "Set's the owner to 0"} _owner == address(0);
     /// #if_succeeds {:msg "can only be called by the owner"} old(_owner) == msg.sender;
-    function renounceOwnership() public virtual onlyOwner {
+    function renounceOwnership() public onlyOwner {
         emit OwnershipTransferred(_owner, address(0));
         _owner = address(0);
     }
@@ -56,9 +54,10 @@ pragma solidity ^0.8.0;
      */
     /// #if_succeeds {:msg "You can never set the owner to 0"} _owner != address(0);
     /// #if_succeeds {:msg "can only be called by the owner"} old(_owner) == msg.sender;
-    function transferOwnership(address newOwner) public virtual onlyOwner {
+    function transferOwnership(address newOwner) public  {
         require(newOwner != address(0), "Ownable: new owner is the zero address");
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
 }
+
